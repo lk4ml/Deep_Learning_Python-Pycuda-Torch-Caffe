@@ -1,0 +1,80 @@
+import numpy as np
+import random
+import pandas as pd
+import matplotlib.pyplot as plt
+#% matplotlib inline
+
+Input_Matrix = np.matrix([[1, 4], [1, 5], [2, 4], [2, 5], [3, 1], [3, 2], [4, 1], [4, 2]])
+Target = np.matrix([[1], [1], [1], [1], [0], [0], [0], [0]])
+
+
+# Answers to (iii) bit
+# Input and Targets can be changed like that for more robustness :
+# x0 = np.random.normal(3.5, 0.7, 10)
+# y0 = np.random.normal(1.5,0.7,10)
+# x1 = np.random.normal(1.5, 0.7,10)
+# y1 = np.random.normal(4.5,0.7,10)
+# p0 = np.column_stack((x0,y0))
+# p1 = np.column_stack((x1,y1))
+# Input_Matrix = np.concatenate((p0,p1))
+# print(Input_Matrix)
+# Target = np.matrix([1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0])
+
+Weights = np.random.rand(1, 2)
+Bias = np.random.rand(1)
+
+
+# Weights=np.random
+# Bias = [5]
+
+def transfer(n):
+    a = []
+    if n > 0:
+        a.append(1)
+    else:
+        a.append(0)
+    return a
+
+
+def Weight_UPDATED(Weights, Bias, error, i, itercount):
+    Weights = np.add(Weights, np.dot(error, Input_Matrix[i]))
+    Bias = np.add(Bias, error)
+    itercount += 1
+    return Weights, Bias, itercount
+
+
+status = "Learning"
+itercount = 0
+while (status == "Learning"):
+    counter = 0
+
+    for i in range(0, 8):
+        n1 = transfer(np.add(np.dot(Weights, Input_Matrix[i].transpose()), Bias))
+        error = Target[i] - n1
+        if error != 0:
+            print(Weights, Bias)
+            Weights, Bias, itercount = Weight_UPDATED(Weights, Bias, error, i, itercount)
+            counter += 1
+    if counter == 0:
+        status = "success"
+
+print("Final weights are ", Weights, Bias)
+W_Final = Weights
+B_Final = Bias
+print("No if iterenations performed", itercount)
+output = [transfer(np.add(np.dot(Weights, Input_Matrix[i].transpose()), Bias)) for i in range(8)]
+print(output)
+
+# For Plotting the line using matplotlib
+# df = pd.DataFrame(Input_Matrix)
+# df
+# df.plot(kind='scatter', x=0, y=1, s=30, color='DarkBlue');
+# df1 = pd.DataFrame(W_Final)
+# slope = -((df1[0] - 0) / (df1[1] - 0))
+# print(slope)
+# print(df1)
+# x = np.arange(0, 5, 1)
+# intercept = pd.DataFrame(B_Final / W_Final[0, 1])
+# y = [slope * i + intercept for i in x]
+# df1
+# plt.plot(x, y)
