@@ -1,0 +1,66 @@
+import numpy as np
+import math
+
+purelin = lambda n: n ## Define the Purelin function
+purelin_derivative = lambda n: 1
+sigmoid = lambda n: 1/(1+math.exp(-n))
+sigmoid_vectorized = np.vectorize(sigmoid)
+sigmoid_derivative =lambda n: math.exp(-n)/(1+math.exp(-n))^2
+sigmoid_derivative_vectorized = np.vectorize(sigmoid_vectorized)
+target = lambda n: 1 + math.sin(n*math.pi/2)
+target.vectorized = np.vectorize(target)
+
+alpha = 1
+p = np.arange(-2, 2, 0.001)
+t = target.vectorized(p)
+S1 = 10
+S2 = 1
+R = 1
+W1 = np.random.uniform(-0.5,0.5,S1*R).reshape((S1, R))
+W2 = np.random.uniform(-0.5,0.5,S2*S1).reshape((S2, S1))
+b1 = np.random.uniform(-0.5,0.5,S1*1).reshape((S1, 1))
+b2 = np.random.uniform(-0.5,0.5,S2*1).reshape((S2, 1))
+
+## Forward Propagation
+def forward_propagation(p,i,W1,W2,b1,b2):
+	a0 = p[i]
+	n1 = np.add(np.dot(W1,a0.transpose()),b1)
+	a1 = sigmoid_vectorized(n1)
+	n2  = np.add(np.dot(W2,a1),b2)
+	a2 = n2
+	return a0,n1,a1,n2,a2
+
+def backward_propagation(t,i,n1,n2,W2,a2):
+	s2 = -2*(t[i]-a2)
+	s1 = np.dot(np.diagflat(sigmoid_derivative_vectorized(n1)),np.dot(W2.transpose(),s2))
+	return s1,s2
+
+def weight_update(a0,W1,b1,s1,a1,W2,b2,s2,alpha):
+	W1 = np.subtract(W1, np.dot(np.dot(alpha,s1), a0.transpose()))
+	b1 = np.subtract(b1, np.dot(alpha, s1))
+	W2 = np.subtract(W2, np.dot(np.dot(alpha,s2), a1.transpose()))
+	b2 = np.subtract(b2, np.dot(alpha, s2))
+	return W1,b1,W2,b2
+
+def predict(p,i,W1,W2,b1,b2):
+	a0 = p[i]
+	n1 = np.add(np.dot(W1,a0.transpose()),b1)
+	a1 = sigmoid_vectorized(n1)
+	n2  = np.add(np.dot(W2,a1),b2)
+	a2 = n2
+	return a2
+
+for i in range(p.shape[0]):
+	a0,n1,a1,n2,a2 = forward_propagation(p,1,W1,W2,b1,b2)
+	s1,s2 = backward_propagation(t,1,n1,n2,W2,a2)
+	W1,b1,W2,b2 = weight_update(a0,W1,b1,s1,a1,W2,b2,s2,alpha)
+
+output = [predict(p,i,W1,W2,b1,b2) for i in range(p.shape[0])]
+flatten = lambda l: [item for sublist in l for item in sublist]
+output1 = flatten(output)
+output2 = flatten(output1)
+print(output2)
+
+import matplotlib.pyplot as plt
+plt.plot(p,output2)
+plt.show()
